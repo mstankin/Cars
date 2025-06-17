@@ -1,139 +1,159 @@
 <!DOCTYPE html>
 <html lang="bg">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Prolog коли с различни типове и GIF</title>
+  <meta charset="UTF-8">
+  <title>Prolog + HTML: Програма за коли</title>
   <style>
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      max-width: 700px;
-      margin: 30px auto;
-      background: #f9f9f9;
-      color: #333;
+      font-family: Arial, sans-serif;
       padding: 20px;
-      box-shadow: 0 0 15px rgba(0,0,0,0.1);
-      border-radius: 10px;
-      text-align: center;
+      background: #f2f2f2;
     }
+
+    h1 {
+      color: #333;
+    }
+
     textarea {
-      width: 90%;
-      max-width: 600px;
+      width: 100%;
       height: 120px;
       font-family: monospace;
-      font-size: 16px;
+      padding: 10px;
       margin-top: 10px;
-      border-radius: 6px;
-      border: 2px solid #007acc;
-      padding: 8px;
-      resize: vertical;
     }
+
     button {
-      margin-top: 15px;
-      padding: 10px 25px;
-      font-size: 18px;
-      background-color: #007acc;
+      margin-top: 10px;
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #007BFF;
       border: none;
       color: white;
-      border-radius: 8px;
+      border-radius: 4px;
       cursor: pointer;
-      transition: background-color 0.3s ease;
     }
-    button:hover {
-      background-color: #005f99;
-    }
-    #result {
+
+    .output {
       margin-top: 20px;
-      font-size: 18px;
-      min-height: 30px;
-      font-weight: bold;
-      color: #004a99;
     }
-    .car-container {
-      margin-top: 30px;
-      min-height: 160px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      background: #d0e8ff;
-      border-radius: 12px;
-      box-shadow: 0 0 10px #a0c4ff;
+
+    .gif {
+      margin-top: 10px;
     }
-    .car-gif {
-      max-width: 180px;
-      border-radius: 12px;
-      box-shadow: 0 0 10px #005f99;
+
+    .instructions {
+      background: #fff;
+      border: 1px solid #ccc;
+      padding: 15px;
+      margin-top: 20px;
+    }
+
+    .gif img {
+      max-width: 250px;
     }
   </style>
 </head>
 <body>
+  <h1>Задание: Програма с Prolog за коли и GIF визуализация</h1>
 
-  <h1>Prolog коли с различни типове и GIF</h1>
+  <textarea id="prolog" placeholder="Напишете вашия Prolog код тук..."></textarea>
+  <button onclick="runQuery()">Изпълни заявката</button>
 
-  <textarea id="prolog-input">
-% Примери на заявки: кола(X).
-  </textarea><br />
-  <button onclick="runProlog()">Изпълни</button>
+  <div class="output" id="output"></div>
+  <div class="gif" id="gifContainer"></div>
 
-  <div id="result"></div>
-  <div class="car-container" id="car-animation"></div>
+  <div class="instructions">
+    <h2>📘 Инструкции:</h2>
+    <p>
+      Това е малко приложение, което използва <strong>Prolog</strong>, за да отговаря на въпроси за коли.
+      След като въведете Prolog заявка и натиснете бутона, ще получите резултати и GIF картинка, ако има такава за съвпадение.
+    </p>
+    <p>
+      <strong>Примери:</strong><br>
+      <code>luxury(X).</code><br>
+      <code>is_sports(X).</code><br>
+      <code>is_german(X).</code>
+    </p>
+    <p>
+      <strong>Как да добавите нова кола:</strong><br>
+      - Добавете нов ред в <code>knowledge</code>: <code>car(lancia).</code><br>
+      - Добавете и GIF линк в <code>carAnimations</code> обекта.
+    </p>
+  </div>
 
-  <script src="https://unpkg.com/tau-prolog"></script>
+  <script src="https://cdn.jsdelivr.net/npm/tau-prolog@0.3.2/modules/core.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/tau-prolog@0.3.2/modules/lists.js"></script>
   <script>
-    const session = pl.create();
-
-    // База знания: типове коли
+    // Prolog knowledge base
     const knowledge = `
-      car(tesla).
       car(bmw).
-      car(mercedes).
+      car(audi).
+      car(tesla).
+      car(ferrari).
+      car(lamborghini).
+      car(toyota).
 
-      electric(X):-car(X).
-      gas(bmw).
-      gas(mercedes).
+      luxury(bmw).
+      luxury(audi).
+      luxury(ferrari).
+
+      sports(ferrari).
+      sports(lamborghini).
+
+      electric(tesla).
+
+      german(bmw).
+      german(audi).
+      japanese(toyota).
+      italian(ferrari).
+      italian(lamborghini).
+      american(tesla).
+
+      is_sports(X) :- sports(X).
+      is_luxury(X) :- luxury(X).
+      is_electric(X) :- electric(X).
+      is_german(X) :- german(X).
+      is_japanese(X) :- japanese(X).
     `;
 
-    session.consult(knowledge);
-
+    // GIFs for each car
     const carAnimations = {
-      tesla: '<img src="https://media.giphy.com/media/j6rQOPkjwWGnw/giphy.gif" class="car-gif" alt="Tesla анимация" />',
-      bmw: '<img src="https://media.giphy.com/media/3oEjI1erPMTMBFmNHi/giphy.gif" class="car-gif" alt="BMW анимация" />',
-      mercedes: '<img src="https://media.giphy.com/media/xT8qBepJHuFLFhNWt2/giphy.gif" class="car-gif" alt="Mercedes анимация" />'
+      bmw: '<img src="https://media.giphy.com/media/ZFEXgGsd6CYf3WEtYB/giphy.gif">',
+      audi: '<img src="https://media.giphy.com/media/azR3lKpU8p7KE/giphy.gif">',
+      tesla: '<img src="https://media.giphy.com/media/h4OGaUvN1dAe8/giphy.gif">',
+      ferrari: '<img src="https://media.giphy.com/media/loJ2A3ZmYqI7a/giphy.gif">',
+      lamborghini: '<img src="https://media.giphy.com/media/3ohjUOx3yHK2VZFQh6/giphy.gif">',
+      toyota: '<img src="https://media.giphy.com/media/YTbZzCkRQCEJa/giphy.gif">'
     };
 
-    function runProlog() {
-      const input = document.getElementById("prolog-input").value;
-      const resultDiv = document.getElementById("result");
-      const animDiv = document.getElementById("car-animation");
+    function runQuery() {
+      const session = pl.create();
+      session.consult(knowledge);
 
-      resultDiv.innerHTML = "";
-      animDiv.innerHTML = "";
+      const query = document.getElementById("prolog").value;
+      session.query(query);
 
-      session.query(input);
-      session.answers(answer => {
-        if(answer === false) {
-          resultDiv.innerHTML += `<p>Няма повече резултати.</p>`;
-          return;
-        }
-        const str = pl.format_answer(answer);
-        if (str === "false.") {
-          resultDiv.innerHTML = "<p>Няма резултати за тази заявка.</p>";
-          return;
-        }
-        resultDiv.innerHTML += `<p>${str}</p>`;
+      const outputDiv = document.getElementById("output");
+      const gifDiv = document.getElementById("gifContainer");
+      outputDiv.innerHTML = "";
+      gifDiv.innerHTML = "";
 
-        const match = str.match(/X = (\w+)/);
-        if (match) {
-          const car = match[1];
-          if (carAnimations[car]) {
-            animDiv.innerHTML = carAnimations[car];
-          } else {
-            animDiv.innerHTML = "<p>Няма GIF за този автомобил.</p>";
-          }
+      session.answers(x => {
+        if (x === false || x === null) {
+          outputDiv.innerHTML = "❌ Няма резултат.";
+        } else {
+          const result = session.format_answer(x);
+          outputDiv.innerHTML += `<p>✅ ${result}</p>`;
+
+          // Show GIF if result includes a known car
+          Object.keys(carAnimations).forEach(car => {
+            if (result.includes(car)) {
+              gifDiv.innerHTML = carAnimations[car];
+            }
+          });
         }
       });
     }
   </script>
-
 </body>
 </html>
